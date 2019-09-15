@@ -2,7 +2,7 @@ import argparse
 
 from data.datagen import *
 from data.loader import *
-from models.custom import *
+from models.model import *
 
 
 def train(args):
