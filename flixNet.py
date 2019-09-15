@@ -1,4 +1,6 @@
 import argparse
+import keras
+from keras.callbacks import Tensorboard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 
 from data.datagen import *
 from data.loader import *
@@ -16,11 +18,19 @@ def train(args):
     validation_generator = DataGenerator(valid, args.images, labels, args.batch_size)
 
     model = get_model(args.arch)
+    #Callbacks.
+    logging = TensorBoard(log_dir=self.log_dir)
+    checkpoint = ModelCheckpoint(self.log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
+                            monitor='val_loss', save_weights_only=True, save_best_only=True, period=1)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1)
+    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1)
+
     history = model.fit_generator(generator=training_generator,
                         validation_data=validation_generator,
                         epochs=args.epochs,
                         use_multiprocessing=True,
-                        workers=5)
+                        workers=5,
+                        callbacks=[logging, checkpoint, reduce_lr, early_stopping])
 
     model.save(args.output_weights)
 
@@ -37,6 +47,8 @@ def init_args():
                         help="Path to folder containing images for either training or testing.")
     parser.add_argument('--csv', type=str, default='',
                         help="Path to the annotation csv file.")
+    parser.add_argument('--log_dir', type=str, default='./logs',
+                        help="Path to save training logs.")
     parser.add_argument('--saved_weights', type=str, default='./models/flixNet.h5',
                         help="Path to saved weight file to be used for inference.")
     parser.add_argument('--output_weights', type=str, default='./models/flixNet.h5',
@@ -52,7 +64,7 @@ def init_args():
     parser.add_argument('--lr', type=float, default=1e-3,
                         help="Initial learning rate.")
     parser.add_argument('--epochs', type=int, default=100, 
-                        help="Number of epochs to train.")
+                        help="Number of epochs for training.")
     parser.add_argument('--train_split', type=float, default= 0.9,
                         help="The percentage of training data.")
 
