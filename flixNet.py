@@ -15,7 +15,7 @@ def train(args):
     training_generator = DataGenerator(train, args.images, labels, args.batch_size)
     validation_generator = DataGenerator(valid, args.images, labels, args.batch_size)
 
-    model = get_model()
+    model = get_model(args.arch)
     history = model.fit_generator(generator=training_generator,
                         validation_data=validation_generator,
                         epochs=args.epochs,
@@ -43,9 +43,11 @@ def init_args():
                         help="Path to save weight file after training.")
     parser.add_argument('--backbone', type=str, default='ResNet50',
                         help="Base CNN-> [ResNet50,VGG19,InceptionV3]")
+    parser.add_argument('--arch', type=str, default='custom',
+                        help="Deep Learning model architecture. (Bilinear CNN or custom)")
     
     #Training hyperparameters.
-    parser.add_argument('--batch_size', type=int, default=32,
+    parser.add_argument('--batch_size', type=int, default=8,
                         help="Number of images to train at once in a single step.")
     parser.add_argument('--lr', type=float, default=1e-3,
                         help="Initial learning rate.")

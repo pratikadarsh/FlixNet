@@ -53,7 +53,9 @@ class DataGenerator(keras.utils.Sequence):
         # Generate data
         for ID in list_IDs_temp:
             # Store sample
-            X.append(cv.imread(os.path.join(self.img_folder, ID)))
+            img = cv.imread(os.path.join(self.img_folder, ID))
+            img = cv.resize(img, (self.dim[0], self.dim[1]))
+            X.append(img)
 
             # Store class
             neck.append(keras.utils.to_categorical(self.labels[ID][0], num_classes=self.n_classes[0]))
