@@ -18,7 +18,7 @@ def train(args):
     model = get_model()
     history = model.fit_generator(generator=training_generator,
                         validation_data=validation_generator,
-                        epochs=50,
+                        epochs=args.epochs,
                         use_multiprocessing=True,
                         workers=5)
 
