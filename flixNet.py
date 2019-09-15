@@ -1,4 +1,5 @@
 import argparse
+import pandas as pd
 import keras
 from keras.models import load_model
 from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
@@ -33,13 +34,30 @@ def train(args):
                         workers=5,
                         callbacks=[logging, checkpoint, reduce_lr, early_stopping])
 
+    history_df = pd.DataFrame(history.history)
+    history_df.to_csv(os.path.join(args.log_dir, args.history))
     model.save(args.output_weights)
 
 def inference(args):
     """ Perform inference using a trained model."""
 
     model = load_model(args.saved_weights)
-    model.summary()
+    output = open("output.csv", 'w')
+    output.write("filename,neck,sleeve_length,pattern\n")
+    for imgs in os.listdir(args.images):
+        if imgs.split(".")[1] not in ['jpg', 'jpeg', 'png']:
+            continue
+        img = cv.imread(os.path.join(args.images, imgs))
+        if img is not None:
+            img = cv.resize(img, (224,224))
+            img = np.expand_dims(img, axis=0)
+            result = model.predict(img)
+            neck = np.argmax(result[0])
+            sleeve_length = np.argmax(result[1])
+            pattern = np.argmax(result[2])
+            output.write(",".join([imgs, str(neck), str(sleeve_length), str(pattern)]))
+            output.write("\n")
+    output.close()
 
 def init_args():
     """ Reads command line arguments."""
@@ -56,6 +74,8 @@ def init_args():
                         help="Path to the annotation csv file.")
     parser.add_argument('--log_dir', type=str, default='./logs',
                         help="Path to save training logs.")
+    parser.add_argument('--history', type=str, default='history.csv',
+                        help="Name of the file to save the training history.")
     parser.add_argument('--saved_weights', type=str, default='./models/flixNet.h5',
                         help="Path to saved weight file to be used for inference.")
     parser.add_argument('--output_weights', type=str, default='./models/flixNet.h5',
@@ -70,7 +90,7 @@ def init_args():
                         help="Number of images to train at once in a single step.")
     parser.add_argument('--lr', type=float, default=1e-3,
                         help="Initial learning rate.")
-    parser.add_argument('--epochs', type=int, default=100, 
+    parser.add_argument('--epochs', type=int, default=20, 
                         help="Number of epochs for training.")
     parser.add_argument('--train_split', type=float, default= 0.9,
                         help="The percentage of training data.")
