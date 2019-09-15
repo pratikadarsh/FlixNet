@@ -1,5 +1,6 @@
 import argparse
 import keras
+from keras.models import load_model
 from keras.callbacks import TensorBoard, ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 
 from data.datagen import *
@@ -20,8 +21,8 @@ def train(args):
     model = get_model(args.arch)
     #Callbacks.
     logging = TensorBoard(log_dir=args.log_dir)
-    checkpoint = ModelCheckpoint(args.log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
-                            monitor='val_loss', save_weights_only=True, save_best_only=True, period=1)
+    checkpoint = ModelCheckpoint(os.path.join(args.log_dir, 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5'),
+                            monitor='val_loss', save_weights_only=False, save_best_only=True, period=1)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1)
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1)
 
@@ -33,6 +34,12 @@ def train(args):
                         callbacks=[logging, checkpoint, reduce_lr, early_stopping])
 
     model.save(args.output_weights)
+
+def inference(args):
+    """ Perform inference using a trained model."""
+
+    model = load_model(args.saved_weights)
+    model.summary()
 
 def init_args():
     """ Reads command line arguments."""
@@ -59,7 +66,7 @@ def init_args():
                         help="Deep Learning model architecture. (Bilinear CNN or custom)")
     
     #Training hyperparameters.
-    parser.add_argument('--batch_size', type=int, default=8,
+    parser.add_argument('--batch_size', type=int, default=32,
                         help="Number of images to train at once in a single step.")
     parser.add_argument('--lr', type=float, default=1e-3,
                         help="Initial learning rate.")
