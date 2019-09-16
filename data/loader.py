@@ -12,7 +12,7 @@ from data.impute import impute_data
 file_directory = os.path.dirname(__file__)
 
 def impute_data_with_most_frequent(ann_data):
-     Fixes the null values in the dataset.
+     """ Fixes the null values in the dataset."""
     
     # TODO: Make getting the names of columns automatic.
     ann_data['neck'].fillna(int(ann_data['neck'].mode()), inplace=True)
