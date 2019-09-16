@@ -86,7 +86,7 @@ def fill_triple_na(df):
             df.loc[i,'no_of_missing']=0.0
     return df
     
-def fill_double_na(df):
+def fill_double_na(df, neck_fillers, sleeve_fillers, pattern_fillers):
     """ Handles cases where two attribute values are null."""
 
     for i in df[df.no_of_missing==2.0].index:
@@ -139,16 +139,16 @@ def impute_data(df):
     pattern_fillers = pd.DataFrame(dtype=float)
 
     for i in sample_neck:
-        temp = probab_when_two_nulls(df, 'neck', i, sample_neck, sample_sleeve, sample_pattern)
-        neck_fillers = neck_fillers.append(temp)
+        prob = probab_when_two_nulls(df, 'neck', i, sample_neck, sample_sleeve, sample_pattern)
+        neck_fillers = neck_fillers.append(prob)
     for i in sample_sleeve:
-        temp = probab_when_two_nulls(df, 'sleeve_length', i, sample_neck, sample_sleeve, sample_pattern)
-        sleeve_fillers = sleeve_fillers.append(temp)
+        prob = probab_when_two_nulls(df, 'sleeve_length', i, sample_neck, sample_sleeve, sample_pattern)
+        sleeve_fillers = sleeve_fillers.append(prob)
     for i in sample_pattern:
-        temp = probab_when_two_nulls(df, 'pattern', i, sample_neck, sample_sleeve, sample_pattern)
-        pattern_fillers = pattern_fillers.append(temp)
+        prob = probab_when_two_nulls(df, 'pattern', i, sample_neck, sample_sleeve, sample_pattern)
+        pattern_fillers = pattern_fillers.append(prob)
 
-    df = fill_double_na(df)
+    df = fill_double_na(df, neck_fillers, sleeve_fillers, pattern_fillers)
 
     # One attribute missing.
     df = fill_single_na(df)
