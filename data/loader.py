@@ -4,15 +4,15 @@ import wget
 import os
 import tarfile
 import shutil
-from urllib.parse import urlparse
 import pandas as pd
 import numpy as np
 import cv2 as cv
+from data.impute import impute_data
 
 file_directory = os.path.dirname(__file__)
 
-def impute_data(ann_data):
-    ''' Fixes the null values in the dataset.'''
+def impute_data_with_most_frequent(ann_data):
+     Fixes the null values in the dataset.
     
     # TODO: Make getting the names of columns automatic.
     ann_data['neck'].fillna(int(ann_data['neck'].mode()), inplace=True)
@@ -24,6 +24,7 @@ def verify_and_impute(images, ann):
     ''' Parses the list of files and verifies the corresponding image.'''
 
     data = pd.read_csv(ann)
+
     data = impute_data(data)
     drop_indices = []
     for index, row in data.iterrows():
