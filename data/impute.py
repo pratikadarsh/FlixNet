@@ -103,7 +103,7 @@ def fill_double_na(df, neck_fillers, sleeve_fillers, pattern_fillers):
             df.loc[i,'sleeve_length']=pattern_fillers[pattern_fillers.pattern==df.loc[i,'pattern']]['sleeve_length'].tolist()[0]
     return df
 
-def fill_single_na(df):
+def fill_single_na(df, sample_neck, sample_sleeve, sample_pattern):
     """ Handles cases where single attribute value is null."""
     
     for i in df[df.no_of_missing==1].index:
