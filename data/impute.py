@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import itertools 
 
-def probab_when_two_nulls(df,attribute,value, sample_neck, sample_sleeve, sample_pattern):
+def probab_when_two_nulls(df, attribute, value, sample_neck, sample_sleeve, sample_pattern):
 
     if(attribute=='neck'):
         product=list(itertools.product(sample_sleeve,sample_pattern))
@@ -30,7 +30,7 @@ def probab_when_two_nulls(df,attribute,value, sample_neck, sample_sleeve, sample
         tempdf = pd.DataFrame(probablist,columns=['neck','sleeve_length','pattern','probability'])
         return(tempdf[tempdf['probability'].max()==tempdf.probability])
 
-def fill_one_missing_value(df,attribute,value1,value2):
+def fill_one_missing_value(df, attribute, value1, value2, sample_neck, sample_sleeve, sample_pattern):
 
     if (attribute=='neck'):
         sleeve=value1
@@ -108,15 +108,15 @@ def fill_single_na(df):
     
     for i in df[df.no_of_missing==1].index:
         if(str(df.loc[i,'neck']).lower()=='nan'):
-            temp=fill_one_missing_value(df,'neck',df.loc[i,'sleeve_length'],df.loc[i,'pattern'])
+            temp=fill_one_missing_value(df,'neck',df.loc[i,'sleeve_length'],df.loc[i,'pattern'], sample_neck, sample_sleeve, sample_pattern)
             temp.reset_index(inplace=True,drop=True)
             df.loc[i,'neck']=temp.loc[0,'neck']
         if(str(df.loc[i,'sleeve_length']).lower()=='nan'):
-            temp=fill_one_missing_value(df,'sleeve_length',df.loc[i,'neck'],df.loc[i,'pattern'])
+            temp=fill_one_missing_value(df,'sleeve_length',df.loc[i,'neck'],df.loc[i,'pattern'], sample_neck, sample_sleeve, sample_pattern)
             temp.reset_index(inplace=True,drop=True)
             df.loc[i,'sleeve_length']=temp.loc[0,'sleeve_length']
         if(str(df.loc[i,'pattern']).lower()=='nan'):
-            temp=fill_one_missing_value(df,'pattern',df.loc[i,'neck'],df.loc[i,'sleeve_length'])
+            temp=fill_one_missing_value(df,'pattern',df.loc[i,'neck'],df.loc[i,'sleeve_length'], sample_neck, sample_sleeve, sample_pattern)
             temp.reset_index(inplace=True,drop=True)
             df.loc[i,'pattern']=temp.loc[0,'pattern'] 
     return df
@@ -151,7 +151,7 @@ def impute_data(df):
     df = fill_double_na(df, neck_fillers, sleeve_fillers, pattern_fillers)
 
     # One attribute missing.
-    df = fill_single_na(df)
+    df = fill_single_na(df, sample_neck, sample_sleeve, sample_pattern)
 
     final_df = df[['filename', 'neck', 'sleeve_length', 'pattern']].copy()
     return final_df
